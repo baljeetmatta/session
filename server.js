@@ -6,6 +6,7 @@ const cookieparser=require("cookie-parser");
 const session=require("express-session");
 app.use(cookieparser());
 const oneday=1000*60*60*24;
+const userRoutes=require("./routing/userroutes");
 
 app.use(session({
     saveUninitialized:true,
@@ -13,8 +14,21 @@ app.use(session({
     secret:'askjh34asdf345#@#43',
     cookie:{maxAge:oneday}
 }));
+app.use("/users",auth,userRoutes);
+function auth(req,res,next)
+{
+    if(req.session.username)
+     next();
+    else
+    res.redirect("/");
 
-
+}
+app.get("/dashboard.html",(req,res)=>{
+    // //res.send("Dashboard");
+     res.redirect("/users/dashboard");
+   
+    
+})
 app.use(express.static("public"));
 app.use(express.urlencoded());
 app.get("/logout",(req,res)=>{
@@ -22,23 +36,27 @@ app.get("/logout",(req,res)=>{
     res.redirect("/login");
 
 })
+
 app.get("/",(req,res)=>{
+    if(req.session.username)
+    res.redirect("/users/dashboard");
+else
     res.sendFile(path.join(__dirname,"./public/login.html"));
 })
 app.get("/login",(req,res)=>{
     if(req.session.username)
-    res.redirect("/dashboard");
+    res.redirect("/users/dashboard");
 else
     res.sendFile(path.join(__dirname,"./public/login.html"));
 })
 
-app.get("/dashboard",(req,res)=>{
-    if(req.session.username)
-    res.sendFile(path.join(__dirname,"./public/dashboard.html"));
-else
-res.redirect("/login");
+// app.get("/dashboard",(req,res)=>{
+//     if(req.session.username)
+//     res.sendFile(path.join(__dirname,"./public/dashboard.html"));
+// else
+// res.redirect("/login");
 
-})
+// })
 app.post("/login",(req,res)=>{
     //console.log(req.body);
     fs.readFile("users.txt","utf-8",(err,data)=>{
@@ -54,7 +72,7 @@ app.post("/login",(req,res)=>{
     //res.send("Welcome");
 {
    req.session.username=req.body.username;
-res.redirect("/dashboard")
+res.redirect("/users/dashboard")
 }
 
     })
