@@ -4,6 +4,7 @@ const fs=require("fs");
 const path=require("path");
 const cookieparser=require("cookie-parser");
 const session=require("express-session");
+app.set("view engine","ejs")
 app.use(cookieparser());
 const oneday=1000*60*60*24;
 const userRoutes=require("./routing/userroutes");
@@ -29,6 +30,15 @@ app.get("/dashboard.html",(req,res)=>{
    
     
 })
+app.get("/",(req,res)=>{
+let data=fs.readFileSync("products.json","utf-8");
+
+//res.json(JSON.parse(data));
+
+
+    res.render("index",{products:JSON.parse(data)});
+
+})
 app.use(express.static("public"));
 app.use(express.urlencoded());
 app.get("/logout",(req,res)=>{
@@ -36,7 +46,17 @@ app.get("/logout",(req,res)=>{
     res.redirect("/login");
 
 })
+app.get("/productdetails",(req,res)=>{
+    console.log("Called");
+    let data=fs.readFileSync("products.json","utf-8");
+    let records=JSON.parse(data);
+    let results=records.filter((item)=>{
+        if(item.id==req.query.id)
+        return true;
+    })
+    res.render("productdetails",{products:results});
 
+})
 app.get("/",(req,res)=>{
     if(req.session.username)
     res.redirect("/users/dashboard");
@@ -47,7 +67,9 @@ app.get("/login",(req,res)=>{
     if(req.session.username)
     res.redirect("/users/dashboard");
 else
-    res.sendFile(path.join(__dirname,"./public/login.html"));
+    //res.sendFile(path.join(__dirname,"./public/login.html"));
+res.render("login",{message:""});
+
 })
 
 // app.get("/dashboard",(req,res)=>{
@@ -67,12 +89,15 @@ app.post("/login",(req,res)=>{
             return true;
         })
         if(results.length==0)
-        res.send("Invalid user/password");
+        //res.send("Invalid user/password");
+    //res.redirect("/login")
+    res.render("login",{message:"Invalid user/password"});
     else
     //res.send("Welcome");
 {
    req.session.username=req.body.username;
-res.redirect("/users/dashboard")
+res.render("dashboard",{name:req.session.username});
+
 }
 
     })
