@@ -46,17 +46,7 @@ app.get("/logout",(req,res)=>{
     res.redirect("/login");
 
 })
-app.get("/productdetails",(req,res)=>{
-    console.log("Called");
-    let data=fs.readFileSync("products.json","utf-8");
-    let records=JSON.parse(data);
-    let results=records.filter((item)=>{
-        if(item.id==req.query.id)
-        return true;
-    })
-    res.render("productdetails",{products:results});
 
-})
 app.get("/",(req,res)=>{
     if(req.session.username)
     res.redirect("/users/dashboard");
@@ -107,7 +97,23 @@ res.render("dashboard",{name:req.session.username});
 //express-session
 //cookie-parser
 
+app.get("/productdetails/:data",(req,res)=>{
 
+
+    fs.readFile("products.json","utf-8",(err,data)=>{
+
+        let products=JSON.parse(data);
+        let results=products.filter((item)=>{
+            if(item.id==req.params.data)
+            return true;
+        })
+        res.render("productdetails",{products:results});
+        
+
+    })
+    
+
+})
 
 app.listen(3000,(err)=>{
 console.log("Server Started...");
